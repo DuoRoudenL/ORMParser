@@ -17,13 +17,26 @@ def create_model(table_definition):
         field_class = field_types.field_types[field_type]
         attrs[column['name']] = field_class()
 
-    DynamicModel = type(table_definition['table_name'], (peewee.Model,), attrs)
+        if column.get('primary_key'):
+            attrs[column['name']].primary_key = True
+
+        if column.get('foreign_key'):
+            foreign_table = column['foreign_key']['table']
+            for model in models:
+                if model.__name__ == foreign_table:
+                    attrs[column['name']] = peewee.ForeignKeyField(model)
+                    break
+
+    DynamicModel = type(table_definition['name'], (peewee.Model,), attrs)
     DynamicModel._meta.database = database.db
-    DynamicModel._meta.table_name = table_definition['table_name']
+    DynamicModel._meta.table_name = table_definition['name']
 
     return DynamicModel
 
 
+models = []
 table_definition = json_parsing('table_definition.json')
-dynamic_model = create_model(table_definition)
-database.db.create_tables([dynamic_model])
+for table in table_definition['tables']:
+    models.append(create_model(table))
+print(models)
+database.db.create_tables(models)
