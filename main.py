@@ -38,5 +38,4 @@ models = []
 table_definition = json_parsing('table_definition.json')
 for table in table_definition['tables']:
     models.append(create_model(table))
-print(models)
 database.db.create_tables(models)
