@@ -2,6 +2,7 @@ import peewee
 import json
 import database
 import field_types
+import sys
 
 
 def json_parsing(file_name):
@@ -35,7 +36,13 @@ def create_model(table_definition):
 
 
 models = []
-table_definition = json_parsing('table_definition.json')
+table_definition = None
+file_name = input('Enter file path: ')
+try:
+    table_definition = json_parsing(file_name)
+except:
+    print('Error!')
+    sys.exit()
 for table in table_definition['tables']:
     models.append(create_model(table))
 database.db.create_tables(models)
